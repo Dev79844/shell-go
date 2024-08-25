@@ -25,6 +25,20 @@ func main(){
 		text = strings.ReplaceAll(text, "\n", "")
 		args := strings.Split(text, " ")
 
-		Execute(args)
+		executeCommands(args)
 	}
+}
+
+func executeCommands(args []string) int {
+	if len(args) == 0{
+		return 1
+	}
+
+	for k, v := range builtins {
+		if args[0] == k {
+			return v(args[1:])
+		}
+	}
+
+	return launch(args)
 }
