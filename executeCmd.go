@@ -8,15 +8,24 @@ import (
 
 )
 
-func Execute(cmd string){
-	exit :=  strings.Compare(cmd, "exit"); if exit==0 {
+func Execute(args []string) int{
+	exit :=  strings.Compare(args[0], "exit"); if exit==0 {
 		os.Exit(0)
 	}
 
-	output, err := exec.Command(cmd).Output()
-	if err!=nil{
-		fmt.Printf(ERRFORMAT, err)
+	return executeSimpleCommand(args)
+}
+
+func executeSimpleCommand(args []string) int {
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Env = nil
+	
+	if err := cmd.Run(); err!=nil{
+		fmt.Println(args)
+		fmt.Printf(ERRFORMAT, err.Error())
 	}
-	fmt.Fprint(os.Stdout, string(output[:]))
-	fmt.Print("\n")
+	return 1
 }

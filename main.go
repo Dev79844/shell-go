@@ -22,8 +22,9 @@ func main(){
 			fmt.Println("Error reading text from console: ", err)
 		}
 
-		text = strings.TrimSpace(text)
+		text = strings.ReplaceAll(text, "\n", "")
+		args := strings.Split(text, " ")
 
-		Execute(text)
+		Execute(args)
 	}
 }
