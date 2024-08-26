@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -23,9 +24,11 @@ func main(){
 		}
 
 		text = strings.ReplaceAll(text, "\n", "")
-		args := strings.Split(text, " ")
 
-		executeCommands(args)
+		args, ok := parseLine(text)
+		if ok && args!=nil{
+			executeCommands(args)
+		}
 	}
 }
 
@@ -41,4 +44,37 @@ func executeCommands(args []string) int {
 	}
 
 	return launch(args)
+}
+
+func parseLine(line string) ([]string, bool){
+	args := regexp.MustCompile("'(.+)'|\"(.+)\"|\\S+").FindAllString(line, -1)
+	for i, arg := range args {
+		if (arg[0] == '"' && arg[len(arg)-1] == '"') || (arg[0] == '\'' && arg[len(arg)-1] == '\'') {
+			args[i] = arg[1 : len(arg)-1]
+		}
+	}
+	
+	if args[0] == "export"{
+		if len(args) == 1{
+			fmt.Printf(ERRFORMAT, "arguments need for export")
+		}
+
+		exportArgs := strings.Split(args[1], "=")
+		if len(exportArgs) != 2 {
+			fmt.Printf(ERRFORMAT, "wrong format of export")
+			return nil, false
+		}
+		os.Setenv(exportArgs[0], exportArgs[1])
+		return args, false
+	}
+
+	fmt.Println(args)
+
+	for i, arg := range args {
+		if arg[0] == '$' {
+			args[i] = os.Getenv(arg[1:])
+		}
+	}
+
+	return args, true
 }
